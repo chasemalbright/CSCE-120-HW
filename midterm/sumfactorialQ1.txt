@@ -1,0 +1,34 @@
+
+// we begin with initializing the function which takes in an unsigned integer
+int sumFactorial(unsigned int number) {
+
+    // account for edge case 0
+    if (number == 0){
+        return 1
+    }
+
+    // first we will initialize an that will hold all sums of factorials for each digit
+    int sum = 0;
+
+    // we then want a way to iterate over each digit in the initial number
+    // we will use a while loop and the % and / operator to get the most 
+    // right most digit so that we can use it in our factorial operations.
+    while (number != 0){ // while the number is not = 0 we keep dividing down and getting the rightmost number digit such as 543 we first want to operate on 3
+        int digit = 0;
+
+
+        digit = number % 10; // this will get us rightmost digit 543 => 3
+        // we have our first digit so we will use a for loop to iterate and add its factorial values
+        for (int i = 0; i <= digit; i++){ // this iterates over all values in range 0 to our first digit
+            sum += i; // we want to add all the values in our digit to sum EX.digit = 6 => 0+1+2+3 = 6
+        }
+        // after calculating factorial sum for first digit, we must move to next digit
+        // do this by dividing by 10 EX. after operating on 3 we must move to 4 in 543
+        number /= 10; // divide number by 10 to then put next digit in position
+        // EX. 543 => 54 this allows for repeat of while loop for next concurrent digit 
+    }
+
+    // we must return our sum at the end
+    return sum;
+
+}

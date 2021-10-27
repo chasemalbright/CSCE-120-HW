@@ -1,0 +1,25 @@
+// we are given a fucntion template to implement
+// function takes in a double array and its size || and other array and its size
+
+double add_arrays(const double v[], unsigned int v_size, const double w[], unsigned int w_size){
+    // first we must check for an invalid argument of inequality of the two sizes
+    // we can do this with an if statement that throws an exception if true
+    if (v_size != w_size){ // checks for inequality,, executes if true
+        // we must throw the exception with meaningful exception
+        throw std::invalid_argument("These arrays are not equal size!");
+    }
+
+    // we must first initialize a value to hold the sums of all the different indexes
+    double sum = 0;
+
+    // we then go into for loop to add each corresponding element in the equivalent length arrays
+    for ( int i = 0; i < v_size; i++){ // doesnt matter which size we use since we alr checked for =
+        // add each element for each index {1,2,3} {4,5,6} EX. first add the 1 & 4 to get 5 
+        sum = sum + v[i] + w[i];
+        // repeat for each element
+    }
+
+    // at the end of operations, we must return the final dot sum for the arrays
+    return sum;
+
+}
