@@ -7,6 +7,7 @@ using std::cin, std::cout, std::endl, std::string, std::ifstream;
 
 
 int main() {
+    
     // display greeting message
     printInstructions();
 

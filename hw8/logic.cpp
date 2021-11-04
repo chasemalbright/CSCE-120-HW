@@ -1,9 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <algorithm>
 #include "logic.h"
 
-using std::cout, std::endl, std::ifstream, std::string;
+using std::cout, std::endl, std::ifstream, std::string, std::cout;
 
 
 bool validateChar(char x){
@@ -35,7 +36,7 @@ bool validateChar(char x){
  */
 char** loadLevel(const string& fileName, int& maxRow, int& maxCol, Player& player) {
 
-   std::ifstream ifs(fileName);
+    std::ifstream ifs(fileName);
 
     if (!ifs.is_open()){
         return nullptr;
@@ -59,9 +60,22 @@ char** loadLevel(const string& fileName, int& maxRow, int& maxCol, Player& playe
         return nullptr;
     }
 
+
+    //check for too many tiles
+    if (maxRow > (INT32_MAX/maxCol)){
+        cout << "TOO BIG";
+        return nullptr;
+    }
+    if (maxCol > (INT32_MAX/maxRow)){
+        cout << "TOO BIG";
+        return nullptr;
+    }
+
+
+
     int playerRow,playerCol;
 
-
+    // validate player row
     ifs >> playerRow;
     if(ifs.fail()){
         return nullptr;
@@ -71,7 +85,7 @@ char** loadLevel(const string& fileName, int& maxRow, int& maxCol, Player& playe
     }
     player.row = playerRow;
 
-
+    // validate player col
     ifs >> playerCol;
     if(ifs.fail()){
         return nullptr;
@@ -81,56 +95,68 @@ char** loadLevel(const string& fileName, int& maxRow, int& maxCol, Player& playe
     }
     player.col = playerCol;
 
-    if (maxRow*maxCol >= INT32_MAX){
-        return nullptr;
-    }
-
-    // std::ifstream ifs(fileName);
-    
-    // if(!ifs.is_open()){
-    //     return nullptr;
-    // }
-
-    // ifs >> maxRow >> maxCol;
-
-    // ifs >> player.row >> player.col;
-
 
     ///////////////////////////////////////
     char** map = createMap(maxRow, maxCol);
     ///////////////////////////////////////
-    
+
     if (map == nullptr){
         return nullptr;
     }
+    for (int row = 0; row < maxRow; row++) {
+        for (int col = 0; col < maxCol; col++) {
+            map[row][col] = 'x';
+        }
+    }
 
+    std::ifstream checker(fileName);
 
+    int lines = 0;
+    std::string line;
 
-    // for (int col = 0; col < maxCol; col++){
-    //     for (int row = 0; row < maxRow; row++){
-    //         ifs >> map[row][col];
-    //         if (ifs.fail() && !ifs.eof()){
-    //             return nullptr;
-    //         }
-    //         if (!validateChar(map[row][col])){
-    //             return nullptr;
-    //         }
-    //     }
-    // }
+    while( getline ( checker, line ) ){
+        if (lines > 1){
+            //std::cout << line << "  " << line.size() << endl;
+            int l = line.length();
+            int c = count(line.begin(), line.end(),' ');
+            remove(line.begin(), line.end(),' ');
+    
+            line.resize(l - c);
+            if (line.size() != maxCol){
+                deleteMap(map, maxRow);
+                return nullptr;
+            }
+        }
+        lines++;
+    }
+    if (lines != (maxRow+2)){
+        deleteMap(map, maxRow);
+        return nullptr;
+    }
 
-    //map[playerRow][playerCol] = TILE_PLAYER;
-
+    //int row = 0; row < maxRow; row++
+    //int col = 0; col < maxCol; col++
+    //bool allGood = true;
 
     //set file contents to 2d array
     for (int row = 0; row < maxRow; row++) {
         for (int col = 0; col < maxCol; col++) {
             ifs >> map[row][col];
             if (ifs.fail() && !ifs.eof()){
+                // allGood = false;
+                // break;
+                deleteMap(map, maxRow);
                 return nullptr;
             }
             //validate character
             if (!validateChar(map[row][col])){
+                // allGood = false;
+                // break;
+                deleteMap(map, maxRow);
                 return nullptr;
+            }
+            if (map[row][col] == TILE_PLAYER){
+                map[row][col] = TILE_OPEN;
             }
 
             if(row == player.row && col == player.col){
@@ -140,9 +166,17 @@ char** loadLevel(const string& fileName, int& maxRow, int& maxCol, Player& playe
         }
     }
 
+    // if (allGood == false){
+    //     deleteMap(map, maxRow);
+    //     return nullptr;
+    // }
+
+
+
     // check for exits
     int doorCount = 0;
     int exitCount = 0;
+    int playerCount = 0;
     for (int row = 0; row < maxRow; row++) {
         for (int col = 0; col < maxCol; col++) {
             if (map[row][col] == TILE_DOOR){
@@ -151,10 +185,18 @@ char** loadLevel(const string& fileName, int& maxRow, int& maxCol, Player& playe
             if (map[row][col] == TILE_EXIT){
                 exitCount++;
             }
+            if (map[row][col] == TILE_PLAYER){
+                playerCount++;
+            }
         }
     }
 
     if (doorCount == 0 && exitCount == 0){
+        deleteMap(map, maxRow);
+        return nullptr;
+    }
+    if (playerCount != 1){
+        deleteMap(map, maxRow);
         return nullptr;
     }
 
@@ -203,14 +245,17 @@ void getDirection(char input, int& nextRow, int& nextCol) {
  */
 char** createMap(int maxRow, int maxCol) {
 
+    //int row = 0; row < maxRow; row++
+    //int col = 0; col < maxCol; col++
+
     char** map = new char *[maxRow] {};
     for (int row = 0; row < maxRow; row++){
         map[row] = new char[maxCol];
     }
 
 
-    for (int col = 0; col < maxCol; col++){
-        for (int row = 0; row < maxRow; row++){
+    for (int row = 0; row < maxRow; row++){
+        for (int col = 0; col < maxCol; col++){
             map[row][col] = '-';
         }
     }
@@ -227,7 +272,7 @@ char** createMap(int maxRow, int maxCol) {
  * @update map, maxRow
  */
 void deleteMap(char**& map, int& maxRow) {
-    if (map != nullptr){
+    if (map != nullptr && maxRow >= 1){
         for (int i = 0; i < maxRow; ++i){
             delete[] map[i];
         }
@@ -254,6 +299,12 @@ void deleteMap(char**& map, int& maxRow) {
 char** resizeMap(char** map, int& maxRow, int& maxCol) {
 
     // create temporary var to hold pointer to resized map
+    if (map == nullptr){
+        return nullptr;
+    }
+    if (maxCol < 1 || maxRow < 1){
+        return nullptr;
+    }
 
     char** mapHolder = createMap(maxRow*2, maxCol*2);
 
@@ -298,12 +349,15 @@ char** resizeMap(char** map, int& maxRow, int& maxCol) {
         }
     }
 
+    int rowHold = maxRow;
+    int colHold = maxCol;
+
     //delete old map
     deleteMap(map, maxRow);
 
     //update vars
-    maxRow = maxRow*2;
-    maxCol = maxCol*2;
+    maxRow = rowHold*2;
+    maxCol = colHold*2;
 
     return mapHolder;
 }
@@ -396,6 +450,60 @@ int doPlayerMove(char** map, int maxRow, int maxCol, Player& player, int nextRow
  */
 bool doMonsterAttack(char** map, int maxRow, int maxCol, const Player& player) {
 
+    // we have to check in all directions first left right up down && have to update map positions
+    // also need to return true if monster is on plsyer
 
+    // need o check and update
+
+    // left of the player check down all column <====
+    for (int col = player.col - 1; col >= 0; col--) {
+        if (map[player.row][col] == TILE_PILLAR) {
+            break;
+        }
+        else if (map[player.row][col] == TILE_MONSTER) {
+            map[player.row][col] = TILE_OPEN;
+            map[player.row][col+1] = TILE_MONSTER;
+        }
+    }
+
+    // right of player check down all column ===>
+    for (int col = player.col + 1; col < maxCol; col++) {
+        if (map[player.row][col] == TILE_PILLAR) {
+            break;
+        }
+        else if (map[player.row][col] == TILE_MONSTER) {
+            map[player.row][col] = TILE_OPEN;
+            map[player.row][col-1] = TILE_MONSTER;
+        }
+    }
+
+    // below the player 
+    for (int row = player.row + 1; row < maxRow; row++) {
+        if (map[row][player.col] == TILE_PILLAR) {
+            break;
+        }
+        else if (map[row][player.col] == TILE_MONSTER) {
+            map[row][player.col] = TILE_OPEN;
+            map[row-1][player.col] = TILE_MONSTER;
+        }
+    }
+
+    //check above
+    for (int row = player.row - 1; row >= 0; row--) {
+        if (map[row][player.col] == TILE_PILLAR) {
+            break;
+        }
+        else if (map[row][player.col] == TILE_MONSTER) {
+            map[row][player.col] = TILE_OPEN;
+            map[row+1][player.col] = TILE_MONSTER;
+        }
+    }
+
+    // if monster is on player it attacks and return true
+    if (map[player.row][player.col] == TILE_MONSTER){
+        return true;
+    }
+
+    // if not on player return false
     return false;
 }
