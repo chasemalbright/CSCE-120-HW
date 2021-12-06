@@ -49,6 +49,7 @@ public:
   /* given a fov number, remove outliers
    */
   std::string outliers(int fov, int k, int N);
+  
 
 	// The functions below are written already. Do not modify them.
 	std::string print() const;

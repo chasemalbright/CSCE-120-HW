@@ -15,8 +15,8 @@ int main(int argc, char** argv)
     {
         CellDatabase database;
         database.loadData(argv[1]);
-	  	  database.outputData(argv[1]); 
 		    database.performQuery(argv[2]); 
+	  	  database.outputData(argv[1]); 
     }
 
     return 0;
