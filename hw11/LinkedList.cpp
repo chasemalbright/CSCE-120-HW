@@ -275,7 +275,7 @@ string LinkedList::outliers(int fov, int k, int N)
     Node* cur = head;
     int count = 0;
     while (cur){
-        if (cur->data.volume < low || cur->data.volume > high){
+        if (cur->data.volume <= low || cur->data.volume >= high){
             remove(cur->data.id,cur->data.fov,cur->data.volume,cur->data.center_x,cur->data.center_y,cur->data.min_x,cur->data.max_x,cur->data.min_y,cur->data.max_y);
             count++;
         }

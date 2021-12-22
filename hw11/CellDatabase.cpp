@@ -27,7 +27,7 @@ bool isDouble(const string& s)
               return false;
          }
     }
-    if (nb_point<=1 )
+    if (nb_point==1 )
     {
           return true;
     }
@@ -185,17 +185,17 @@ void CellDatabase::performQuery(const string& filename)
         if (data.substr(0,4) == "AVG "){
             if(isInt(data.substr(4,data.length()-1))){
                 double av = records.average(stoi(data.substr(4,data.length()-1)));
-                outfile << "AVG " + data.substr(4,data.length()-1) << ": " << av << endl;
+                outfile << "AVG " + data.substr(4,data.length()-1) + ": " + std::to_string(av) << endl;
             }
         } else if (data.substr(0,4) == "VAR "){
             if(isInt(data.substr(4,data.length()-1))){
                 double var = records.variance(stoi(data.substr(4,data.length()-1)));
-                outfile << "VAR " + data.substr(4,data.length()-1) << ": " << var << endl;
+                outfile << "VAR " + data.substr(4,data.length()-1) + ": " + std::to_string(var) << endl;
             }
         } else if (data.substr(0,6) == "COUNT "){
             if(isInt(data.substr(6,data.length()-1))){
                 int cnt = records.countN(stoi(data.substr(6,data.length()-1)));
-                outfile << "COUNT " + data.substr(6,data.length()-1) << ": " << cnt << endl;
+                outfile << "COUNT " + data.substr(6,data.length()-1) + ": " + std::to_string(cnt) << endl;
             }
         } else if (verifyOutlier(data)){
             int spaceIndexAry[5]={0,0,0,0,0};
